@@ -9,6 +9,18 @@ An insta reel type short video generated entirely with Python + ffmpeg - no vide
 
 A 15-second glitchy, self-aware video narrated from the perspective of an LLM - covering token soup, probability bars, memory loss, existential freakouts, and a terminal self-diagnostic. Swalpa (a lil) personal, nerdy, and slightly unhinged - like me.
 
+
+## How It Works
+
+### Frame generation (`make_frames.py`)
+
+Every frame is a matplotlib figure rendered to PNG. No OpenCV, no PIL image manipulation - just axes, patches, and text.
+
+<img src="THE_gif.gif" alt="Demo" width="500" />
+
+
+
+
 **Scenes:**
 
 | Sr No. | Name | Duration | Description |
@@ -90,14 +102,6 @@ claudetrippy/
 > `frames/` and `*.mp4` are gitignored - they're build artifacts, not source.
 
 ---
-
-## How It Works
-
-### Frame generation (`make_frames.py`)
-
-Every frame is a matplotlib figure rendered to PNG. No OpenCV, no PIL image manipulation - just axes, patches, and text.
-
-<img src="THE_gif.gif" alt="Demo" width="500" />
 
 
 ## Dependencies

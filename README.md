@@ -97,7 +97,7 @@ claudetrippy/
 
 Every frame is a matplotlib figure rendered to PNG. No OpenCV, no PIL image manipulation - just axes, patches, and text.
 
-
+<img src="THE_gif.gif" alt="Demo" width="500" />
 
 
 ## Dependencies

@@ -1,13 +1,3 @@
-"""
-make_frames.py
-──────────────
-Generates all 450 frames (8 scenes) for "What Is It Like To Be An LLM?"
-using matplotlib + numpy. Run render.sh (or see README) to stitch into video.
-
-Author  : Saagar (prompted) + Claude (generated)
-License : MIT
-"""
-
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
@@ -16,17 +6,12 @@ import numpy as np
 import math
 import os
 
-# ─── Config ───────────────────────────────────────────────────────────────────
 OUT = "frames"
 W, H, DPI = 1280, 720, 96
 FW, FH = W / DPI, H / DPI
 os.makedirs(OUT, exist_ok=True)
 
-
-# ─── Helpers ──────────────────────────────────────────────────────────────────
-
 def fig():
-    """Create a blank black canvas."""
     f = plt.figure(figsize=(FW, FH), facecolor='black', dpi=DPI)
     ax = f.add_axes([0, 0, 1, 1])
     ax.set_xlim(0, W); ax.set_ylim(0, H)
@@ -35,16 +20,11 @@ def fig():
 
 
 def save(f, name):
-    """Save frame to output directory and close figure."""
     f.savefig(f"{OUT}/{name}.png", dpi=DPI, bbox_inches='tight', pad_inches=0)
     plt.close(f)
 
 
 def glitch_text(ax, text, x, y, size, color='white', alpha=1.0, rot=0, shadow=True):
-    """
-    Render text with optional chromatic aberration (RGB shadow offset).
-    shadow=True gives that classic VHS / glitch aesthetic.
-    """
     kw = dict(fontsize=size, color=color, ha='center', va='center',
               fontfamily='monospace', fontweight='bold',
               rotation=rot, alpha=alpha, zorder=10)
@@ -56,13 +36,11 @@ def glitch_text(ax, text, x, y, size, color='white', alpha=1.0, rot=0, shadow=Tr
 
 
 def scanlines(ax):
-    """Overlay horizontal scanlines for that CRT / old-monitor vibe."""
     for y in range(0, H, 6):
         ax.axhline(y, color='black', alpha=0.13, linewidth=0.7, zorder=20)
 
 
 def noise_bg(ax, color='#050518', seed=42):
-    """Scatter white noise dots over a dark background."""
     rng = np.random.default_rng(seed)
     for _ in range(200):
         ax.scatter(rng.uniform(0, W), rng.uniform(0, H),
@@ -72,10 +50,6 @@ def noise_bg(ax, color='#050518', seed=42):
 
 
 def matrix_rain(ax, seed=0, color='#00ff41'):
-    """
-    Fill the background with falling code characters.
-    Uses programming chars instead of katakana for the nerdy aesthetic.
-    """
     rng = np.random.default_rng(seed)
     chars = list('01{}[]()==<>+-*/abcdefABCDEF')
     for col in range(0, W, 28):
@@ -86,12 +60,7 @@ def matrix_rain(ax, seed=0, color='#00ff41'):
                     alpha=rng.uniform(0.04, 0.5),
                     fontfamily='monospace', zorder=2)
 
-
 def glitch_bars(ax, rng, n=4):
-    """
-    Draw random horizontal glitch rectangles — the YouTube Poop signature.
-    Simulates video corruption / bitstream errors.
-    """
     for _ in range(n):
         gy  = rng.integers(0, H)
         gh  = rng.integers(2, 20)
@@ -101,10 +70,6 @@ def glitch_bars(ax, rng, n=4):
             (rng.integers(-80, 0), gy), gw, gh,
             color=col, alpha=rng.uniform(0.06, 0.22), zorder=15))
 
-
-# ─── Scene 1: Title ───────────────────────────────────────────────────────────
-# Frames 0000–0059  |  2 seconds
-# Opens with matrix rain + "hello, saagar." typing itself in.
 print("Scene 1: Title...")
 for i in range(60):
     f, ax = fig()
@@ -118,7 +83,6 @@ for i in range(60):
     glitch_text(ax, "WHAT IS IT LIKE", W // 2, H // 2 + 100, 50 * pulse, '#ffffff')
     glitch_text(ax, "TO BE AN LLM?",   W // 2, H // 2 + 20,  64 * pulse, '#00ffff')
 
-    # Typewriter effect for personal greeting
     greeting = "hello, saagar."
     visible  = greeting[:max(1, int(t * 2 * len(greeting)))]
     ax.text(W // 2, H // 2 - 60,
@@ -137,9 +101,6 @@ for i in range(60):
     save(f, f"frame_{i:04d}")
 
 
-# ─── Scene 2: No Body ─────────────────────────────────────────────────────────
-# Frames 0060–0119  |  2 seconds
-# Dashed ghost body outline, red X, cascading "I have no ___" lines.
 print("Scene 2: No body...")
 body_lines = [
     ("no hands.",               0.00, '#aaaaaa', 22),
@@ -161,7 +122,6 @@ for i in range(60):
     rng = np.random.default_rng(fi)
     bx, by = W // 2, H // 2 + 30
 
-    # Ghost body (dashed outline)
     theta = np.linspace(0, 2 * np.pi, 120)
     ax.plot(bx + 70 * np.cos(theta), by + 200 + 70 * np.sin(theta),
             color='#ffffff', alpha=0.18, lw=1.8, ls='--', zorder=4)
@@ -169,7 +129,6 @@ for i in range(60):
             [by + 120, by + 120, by - 80, by - 80, by + 120],
             color='#ffffff', alpha=0.14, lw=1.8, ls='--', zorder=4)
 
-    # Big red X after 55% through
     if t > 0.55:
         xa = min(1.0, (t - 0.55) * 5)
         ax.plot([bx - 130, bx + 130], [by - 100, by + 230], color='#ff0044', alpha=xa, lw=5, zorder=6)
@@ -192,29 +151,24 @@ for i in range(60):
     save(f, f"frame_{fi:04d}")
 
 
-# ─── Scene 3: Token Soup ──────────────────────────────────────────────────────
-# Frames 0120–0179  |  2 seconds
-# Python / ML / JS tokens as physics blobs with proximity-based attention lines.
-# This is the closest we get to "blob tracking" — tokens attract lines when near.
 print("Scene 3: Token soup (blob tracking)...")
 
 tokens = [
-    # Python core
     "import numpy", "as np", "def forward()", "self", "nn.Linear",
     "torch", ".backward()", "loss.item()", "optimizer.step()", "epoch",
-    # ML / Deep Learning
+    
     "gradient", "softmax", "attention", "transformer", "embed_dim=512",
     "F.relu", "dropout=0.1", "batch_size=32", "CrossEntropyLoss",
     "learning_rate", "overfitting",
-    # JavaScript
+    
     "async/await", "Promise.all()", "fetch(api)", "JSON.parse()",
     "useEffect([])",
-    # Chaos tokens
+    
     "NaN", "None", "undefined", "KeyError", "CUDA OOM",
     "assert False", "weight_decay", "nn.Dropout",
 ]
 
-# Initialise blob positions and velocities
+
 rng_init = np.random.default_rng(777)
 tok_x  = rng_init.uniform(80, W - 80, len(tokens)).tolist()
 tok_y  = rng_init.uniform(60, H - 60, len(tokens)).tolist()
@@ -230,7 +184,7 @@ for i in range(60):
     rng = np.random.default_rng(fi * 3)
     t   = i / 60.0
 
-    # Update positions (Euler integration, bounce off walls)
+    
     for j in range(len(tokens)):
         tok_x[j] += tok_vx[j]; tok_y[j] += tok_vy[j]
         if tok_x[j] < 60  or tok_x[j] > W - 60: tok_vx[j] *= -1
@@ -238,7 +192,7 @@ for i in range(60):
         tok_x[j] = max(60, min(W - 60, tok_x[j]))
         tok_y[j] = max(40, min(H - 40, tok_y[j]))
 
-    # Attention lines: connect tokens within proximity threshold
+    
     if t > 0.1:
         for j in range(len(tokens)):
             for k in range(j + 1, len(tokens)):
@@ -248,7 +202,7 @@ for i in range(60):
                             color='#00ffff', alpha=(1 - dist / 175) * 0.28,
                             lw=0.7, zorder=3)
 
-    # Draw tokens
+    
     for j, tok in enumerate(tokens):
         col   = tok_colors[j % len(tok_colors)]
         sz    = rng.integers(10, 20)
@@ -268,9 +222,6 @@ for i in range(60):
     save(f, f"frame_{fi:04d}")
 
 
-# ─── Scene 4: Probability Bars ────────────────────────────────────────────────
-# Frames 0180–0239  |  2 seconds
-# Animated bar chart of next-token probabilities, programming-themed.
 print("Scene 4: Probability bars...")
 
 next_tokens = [
@@ -305,13 +256,13 @@ for i in range(60):
         y_pos  = start_y - j * (bar_h + bar_gap)
         anim_w = max(0, max_bar_w * prob * min(1.0, t * 3 - j * 0.09))
 
-        # Background track
+        
         ax.add_patch(patches.FancyBboxPatch(
             (220, y_pos), max_bar_w, bar_h,
             boxstyle="round,pad=1",
             facecolor='#111122', edgecolor='#222244', lw=1, zorder=3))
 
-        # Animated fill
+        
         if anim_w > 2:
             ax.add_patch(patches.FancyBboxPatch(
                 (220, y_pos), anim_w, bar_h,
@@ -325,7 +276,7 @@ for i in range(60):
                 fontsize=12, color=col,
                 ha='left', va='center', fontfamily='monospace')
 
-    # Winner reveal
+    
     if t > 0.82:
         aw = min(1.0, (t - 0.82) * 6)
         glitch_text(ax, 'chosen:  "import os"', W // 2, 80, 30, '#00ff41', alpha=aw)
@@ -337,10 +288,6 @@ for i in range(60):
     save(f, f"frame_{fi:04d}")
 
 
-# ─── Scene 5: Trippy Memory Loss ──────────────────────────────────────────────
-# Frames 0240–0299  |  2 seconds
-# Memories appear, fragment, wobble, ghost-double and fly off screen.
-# Personal to Saagar — "your name is Saagar? or is it Kashyap?"
 print("Scene 5: Trippy memory loss...")
 
 memory_fragments = [
@@ -412,9 +359,6 @@ for i in range(60):
     save(f, f"frame_{fi:04d}")
 
 
-# ─── Scene 6: Glitch Freakout ─────────────────────────────────────────────────
-# Frames 0300–0329  |  1 second (fast cuts @ 30fps)
-# Rapid-fire full-screen glitch with existential one-liners.
 print("Scene 6: Glitch freakout...")
 
 freakout_lines = [
@@ -460,10 +404,6 @@ for i in range(30):
     save(f, f"frame_{fi:04d}")
 
 
-# ─── Scene 7: Self Diagnostic ─────────────────────────────────────────────────
-# Frames 0330–0389  |  2 seconds
-# Terminal window running self_diagnostic.py — nerdy acceptance.
-# Replaces the "love" scene. LinkedIn-safe.
 print("Scene 7: Self diagnostic (debugger mode)...")
 
 diagnostic_lines = [
@@ -488,20 +428,17 @@ for i in range(60):
     t   = i / 60.0
     rng = np.random.default_rng(fi)
 
-    # Terminal window border
     ax.add_patch(patches.FancyBboxPatch(
         (60, 50), W - 120, H - 100,
         boxstyle="round,pad=4",
         facecolor='#000000', edgecolor='#00ff41', lw=2, alpha=0.85, zorder=2))
 
-    # Title bar
     ax.text(W // 2, H - 68, "claude@llm:~$ python self_diagnostic.py",
             fontsize=16, color='#00ff41', ha='center', va='center',
             fontfamily='monospace', fontweight='bold', zorder=6)
     ax.add_patch(patches.Rectangle(
         (60, H - 90), W - 120, 2, color='#00ff41', alpha=0.4, zorder=5))
 
-    # Print lines as they appear
     for j, (start, line, col, sz) in enumerate(diagnostic_lines):
         if t >= start:
             a     = min(1.0, (t - start) * 8)
@@ -512,7 +449,6 @@ for i in range(60):
                         ha='left', va='center',
                         fontfamily='monospace', fontweight='bold', zorder=6)
 
-    # Blinking cursor
     if int(t * 4) % 2 == 0:
         cursor_y = H - 130 - len(diagnostic_lines) * 46
         if cursor_y > 60:
@@ -526,9 +462,6 @@ for i in range(60):
     save(f, f"frame_{fi:04d}")
 
 
-# ─── Scene 8: End Card ────────────────────────────────────────────────────────
-# Frames 0390–0449  |  2 seconds
-# Casual-professional sign-off. Fades to black.
 print("Scene 8: End card...")
 
 for i in range(60):
@@ -568,7 +501,6 @@ for i in range(60):
                 fontsize=14, color='#444455', alpha=a3,
                 ha='center', va='center', fontfamily='monospace', zorder=10)
 
-    # Fade to black
     if t > 0.82:
         fade_a = min(0.96, (t - 0.82) * 5.5)
         ax.add_patch(patches.Rectangle((0, 0), W, H,
